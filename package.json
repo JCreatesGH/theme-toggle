@@ -1,0 +1,26 @@
+{
+  "name": "theme-toggle-ts",
+  "version": "0.1.0",
+  "description": "Dark-mode theming with system-preference support, persistence, and no flash of wrong theme.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [
+    "dark-mode",
+    "theme",
+    "prefers-color-scheme",
+    "fouc",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "vitest": "^4.0.0",
+    "typescript": "^5.4.0",
+    "jsdom": "^25.0.0"
+  },
+  "author": "Joshua John <josh202@gmail.com>"
+}

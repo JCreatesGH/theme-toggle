@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>theme-toggle demo</title>
+<style>
+  :root { --bg:#ffffff; --fg:#1a1a1a; --card:#f4f4f5; --accent:#6366f1; }
+  [data-theme="dark"] { --bg:#0f1117; --fg:#e6edf3; --card:#1b1f2a; --accent:#818cf8; }
+  body { background:var(--bg); color:var(--fg); font-family:system-ui; margin:0; padding:48px;
+         transition:background .25s, color .25s; }
+  .card { background:var(--card); padding:24px; border-radius:14px; max-width:420px; }
+  button { background:var(--accent); color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer; }
+</style></head>
+<body>
+  <div class="card">
+    <h1>theme-toggle</h1>
+    <p>Resolved theme: <strong id="now"></strong></p>
+    <button id="btn">Toggle theme</button>
+  </div>
+  <script type="module">
+    import { ThemeEngine } from "./src/core.ts";
+    const engine = new ThemeEngine();
+    const show = () => document.getElementById("now").textContent = engine.resolved;
+    show();
+    document.getElementById("btn").onclick = () => { engine.toggle(); show(); };
+  </script>
+</body></html>

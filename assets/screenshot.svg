@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="380" viewBox="0 0 820 380" font-family="system-ui,Segoe UI,Helvetica,sans-serif">
+  <rect width="820" height="380" fill="#e9e9ee"/>
+  <text x="24" y="36" font-size="18" font-weight="700" fill="#1a1a1a">theme-toggle — same component, system-aware</text>
+  <!-- light -->
+  <g transform="translate(24,60)">
+    <rect width="370" height="270" rx="14" fill="#ffffff" stroke="#ddd"/>
+    <text x="20" y="36" font-size="13" fill="#777">data-theme="light"</text>
+    <rect x="20" y="56" width="330" height="150" rx="12" fill="#f4f4f5"/>
+    <text x="40" y="92" font-size="20" font-weight="700" fill="#1a1a1a">Good morning</text>
+    <text x="40" y="120" font-size="13" fill="#52525b">Resolved theme: light</text>
+    <rect x="40" y="140" width="150" height="38" rx="8" fill="#6366f1"/>
+    <text x="115" y="164" font-size="13" fill="#fff" text-anchor="middle">Toggle theme</text>
+    <circle cx="320" cy="178" r="16" fill="#fde68a"/><circle cx="320" cy="178" r="9" fill="#f59e0b"/>
+  </g>
+  <!-- dark -->
+  <g transform="translate(426,60)">
+    <rect width="370" height="270" rx="14" fill="#0f1117" stroke="#0b0d12"/>
+    <text x="20" y="36" font-size="13" fill="#7d8590">data-theme="dark"</text>
+    <rect x="20" y="56" width="330" height="150" rx="12" fill="#1b1f2a"/>
+    <text x="40" y="92" font-size="20" font-weight="700" fill="#e6edf3">Good evening</text>
+    <text x="40" y="120" font-size="13" fill="#9aa4b2">Resolved theme: dark</text>
+    <rect x="40" y="140" width="150" height="38" rx="8" fill="#818cf8"/>
+    <text x="115" y="164" font-size="13" fill="#fff" text-anchor="middle">Toggle theme</text>
+    <circle cx="320" cy="178" r="14" fill="#cbd5e1"/><circle cx="326" cy="174" r="14" fill="#1b1f2a"/>
+  </g>
+  <text x="24" y="358" font-size="12.5" fill="#52525b" font-family="SFMono-Regular,monospace">✓ 8 tests · no-flash &lt;head&gt; script · localStorage persistence · zero deps</text>
+</svg>
