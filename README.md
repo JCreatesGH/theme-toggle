@@ -1,6 +1,6 @@
 # theme-toggle-ts
 
-[![CI](https://github.com/josh/theme-toggle/actions/workflows/ci.yml/badge.svg)](https://github.com/josh/theme-toggle/actions)
+[![CI](https://github.com/JCreatesGH/theme-toggle/actions/workflows/ci.yml/badge.svg)](https://github.com/JCreatesGH/theme-toggle/actions)
 [![TypeScript](https://img.shields.io/badge/types-included-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
