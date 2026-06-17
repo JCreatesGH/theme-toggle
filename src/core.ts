@@ -28,27 +28,43 @@ export function resolveTheme(theme: Theme, prefersDark: boolean): Resolved {
   return theme;
 }
 
+type MediaQueryListLike = {
+  matches: boolean;
+  addEventListener?: Function;
+  removeEventListener?: Function;
+};
+
 export class ThemeEngine {
   private storageKey: string;
   private attribute: string;
   private element?: ThemeEngineOptions["element"];
   private store?: ThemeStore;
-  private mm?: ThemeEngineOptions["matchMedia"];
   private current: Theme;
+  private mql?: MediaQueryListLike;
+  private listeners = new Set<(resolved: Resolved) => void>();
+  private onSystemChange: () => void;
+  private last?: Resolved;
 
   constructor(opts: ThemeEngineOptions = {}) {
     this.storageKey = opts.storageKey ?? "theme";
     this.attribute = opts.attribute ?? "data-theme";
     this.element = opts.element ?? (typeof document !== "undefined" ? document.documentElement : undefined);
     this.store = opts.store ?? defaultStore(this.storageKey);
-    this.mm = opts.matchMedia;
+
+    const mm = opts.matchMedia ?? (typeof window !== "undefined" ? window.matchMedia.bind(window) : undefined);
+    this.mql = mm ? mm(DARK_QUERY) : undefined;
     this.current = this.store?.get() ?? "system";
+
+    // Live-follow the OS: re-apply when the system preference changes while in "system" mode.
+    this.onSystemChange = () => { if (this.current === "system") this.apply(); };
+    this.mql?.addEventListener?.("change", this.onSystemChange);
+
     this.apply();
   }
 
   get theme(): Theme { return this.current; }
   get resolved(): Resolved {
-    return resolveTheme(this.current, systemPrefersDark(this.mm));
+    return resolveTheme(this.current, this.mql ? this.mql.matches : false);
   }
 
   set(theme: Theme): Resolved {
@@ -61,9 +77,33 @@ export class ThemeEngine {
     return this.set(this.resolved === "dark" ? "light" : "dark");
   }
 
+  /** Cycle light → dark → system → light (for a tri-state control). Returns the new Theme. */
+  cycle(): Theme {
+    const order: Theme[] = ["light", "dark", "system"];
+    const next = order[(order.indexOf(this.current) + 1) % order.length];
+    this.set(next);
+    return next;
+  }
+
+  /** Subscribe to resolved-theme changes. Returns an unsubscribe function. */
+  subscribe(listener: (resolved: Resolved) => void): () => void {
+    this.listeners.add(listener);
+    return () => { this.listeners.delete(listener); };
+  }
+
+  /** Detach the OS listener and drop all subscribers. */
+  destroy(): void {
+    this.mql?.removeEventListener?.("change", this.onSystemChange);
+    this.listeners.clear();
+  }
+
   private apply(): Resolved {
     const resolved = this.resolved;
     this.element?.setAttribute(this.attribute, resolved);
+    if (resolved !== this.last) {
+      this.last = resolved;
+      for (const l of this.listeners) l(resolved);
+    }
     return resolved;
   }
 }
@@ -78,7 +118,14 @@ function defaultStore(key: string): ThemeStore | undefined {
 
 // Inline script to drop in <head> to prevent flash-of-wrong-theme (FOUC).
 export function noFlashScript(storageKey = "theme", attribute = "data-theme"): string {
-  return `(function(){try{var t=localStorage.getItem('${storageKey}')||'system';` +
+  const k = jsString(storageKey);
+  const a = jsString(attribute);
+  return `(function(){try{var t=localStorage.getItem('${k}')||'system';` +
     `var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);` +
-    `document.documentElement.setAttribute('${attribute}',d?'dark':'light');}catch(e){}})();`;
+    `document.documentElement.setAttribute('${a}',d?'dark':'light');}catch(e){}})();`;
+}
+
+// Escape a value for safe embedding inside a single-quoted JS string literal.
+function jsString(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }

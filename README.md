@@ -22,7 +22,13 @@ import { ThemeEngine } from "theme-toggle-ts";
 const engine = new ThemeEngine();      // reads storage + OS preference, applies data-theme
 engine.toggle();                       // light <-> dark, persisted
 engine.set("system");                  // follow the OS again
+engine.cycle();                        // light -> dark -> system -> … (tri-state button)
 engine.resolved;                       // "light" | "dark" (after resolving "system")
+
+// React to changes (e.g. update an icon). In "system" mode this also fires when
+// the OS flips light/dark while the page is open.
+const off = engine.subscribe((resolved) => updateIcon(resolved));
+// ...later: off();  engine.destroy();
 ```
 
 Style off the attribute:
@@ -51,14 +57,17 @@ Drop this in `<head>` **before** your stylesheet so the correct theme is set bef
 - `new ThemeEngine(options?)` — `{ storageKey, attribute, element, store, matchMedia }`, all injectable (which is why it's 100% testable without a DOM).
 - `.theme` → `"light" | "dark" | "system"` (the user's choice)
 - `.resolved` → `"light" | "dark"` (what's actually applied)
-- `.set(theme)` · `.toggle()` · `noFlashScript()` · `resolveTheme()` · `systemPrefersDark()`
+- `.set(theme)` · `.toggle()` · `.cycle()` — change the theme
+- `.subscribe(listener)` → returns an unsubscribe fn; fires on every resolved-theme change, **including live OS light/dark switches while in `system` mode**
+- `.destroy()` — detach the OS listener and drop subscribers
+- `noFlashScript()` · `resolveTheme()` · `systemPrefersDark()`
 
 A runnable `demo.html` is included.
 
 ## Development
 
 ```bash
-npm install && npm test    # 8 tests
+npm install && npm test    # 14 tests
 ```
 
 ## License

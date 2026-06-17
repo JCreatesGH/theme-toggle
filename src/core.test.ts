@@ -11,6 +11,19 @@ function fakeStore(initial: any = null) {
 }
 const mm = (dark: boolean) => () => ({ matches: dark });
 
+// A fake MediaQueryList that can fire `change` events, for testing live OS updates.
+function fakeMM(initialDark: boolean) {
+  let matches = initialDark;
+  const cbs = new Set<(e: { matches: boolean }) => void>();
+  const mql = {
+    get matches() { return matches; },
+    addEventListener: (_e: string, cb: any) => cbs.add(cb),
+    removeEventListener: (_e: string, cb: any) => cbs.delete(cb),
+    _change: (d: boolean) => { matches = d; cbs.forEach((cb) => cb({ matches: d })); },
+  };
+  return { mm: () => mql, mql };
+}
+
 describe("resolveTheme", () => {
   it("resolves system to the OS preference", () => {
     expect(resolveTheme("system", true)).toBe("dark");
@@ -61,10 +74,64 @@ describe("ThemeEngine", () => {
   });
 });
 
+describe("ThemeEngine system reactivity", () => {
+  it("live-follows the OS in system mode", () => {
+    const el = fakeElement();
+    const { mm, mql } = fakeMM(false);
+    const e = new ThemeEngine({ element: el, store: fakeStore(null), matchMedia: mm });
+    expect(el.attrs["data-theme"]).toBe("light");
+    mql._change(true);
+    expect(el.attrs["data-theme"]).toBe("dark");
+    expect(e.resolved).toBe("dark");
+  });
+
+  it("ignores OS changes once an explicit theme is chosen", () => {
+    const el = fakeElement();
+    const { mm, mql } = fakeMM(false);
+    const e = new ThemeEngine({ element: el, store: fakeStore(null), matchMedia: mm });
+    e.set("light");
+    mql._change(true);
+    expect(el.attrs["data-theme"]).toBe("light");
+  });
+
+  it("subscribe is notified on change; unsubscribe stops it", () => {
+    const { mm, mql } = fakeMM(false);
+    const e = new ThemeEngine({ element: fakeElement(), store: fakeStore("system"), matchMedia: mm });
+    const seen: string[] = [];
+    const off = e.subscribe((r) => seen.push(r));
+    mql._change(true);    // system -> dark
+    e.set("light");       // -> light
+    off();
+    e.set("dark");        // not recorded
+    expect(seen).toEqual(["dark", "light"]);
+  });
+
+  it("destroy detaches the OS listener", () => {
+    const el = fakeElement();
+    const { mm, mql } = fakeMM(false);
+    const e = new ThemeEngine({ element: el, store: fakeStore("system"), matchMedia: mm });
+    e.destroy();
+    mql._change(true);
+    expect(el.attrs["data-theme"]).toBe("light");
+  });
+
+  it("cycle goes light -> dark -> system -> light", () => {
+    const e = new ThemeEngine({ element: fakeElement(), store: fakeStore("light"), matchMedia: mm(false) });
+    expect(e.cycle()).toBe("dark");
+    expect(e.cycle()).toBe("system");
+    expect(e.cycle()).toBe("light");
+  });
+});
+
 describe("noFlashScript", () => {
   it("returns an IIFE referencing the storage key", () => {
     const s = noFlashScript("mytheme");
     expect(s).toContain("mytheme");
     expect(s.startsWith("(function()")).toBe(true);
+  });
+
+  it("escapes quotes in the storage key and attribute", () => {
+    const s = noFlashScript("a'b");
+    expect(s).toContain("a\\'b");
   });
 });
