@@ -1,7 +1,7 @@
 {
   "name": "theme-toggle-ts",
-  "version": "0.1.0",
-  "description": "Dark-mode theming with system-preference support, persistence, and no flash of wrong theme.",
+  "version": "0.2.0",
+  "description": "Dark-mode theming: system preference, persistence, Tailwind class support, color-scheme + theme-color sync, cross-tab sync, and no flash of wrong theme.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,6 +20,9 @@
     "dark-mode",
     "theme",
     "prefers-color-scheme",
+    "color-scheme",
+    "theme-color",
+    "tailwind",
     "fouc",
     "typescript"
   ],
